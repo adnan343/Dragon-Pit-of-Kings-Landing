@@ -34,12 +34,12 @@ app.delete("/api/dragons/:id", async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ message: 'Invalid ID format' });
     }
-    console.log(mongoose.Types.ObjectId.isValid(id));
+    // console.log(mongoose.Types.ObjectId.isValid(id));
 
 
     try {
         // Call findByIdAndDelete to delete the dragon by ID
-        const deletedDragon = await Dragon.findByIdAndDelete(dragonId);
+        const deletedDragon = await Dragon.findByIdAndDelete(id);
 
         // If no dragon was found, return 404
         if (!deletedDragon) {
@@ -49,12 +49,22 @@ app.delete("/api/dragons/:id", async (req, res) => {
         // Success: Dragon deleted
         return res.status(200).json({
             message: "Dragon deleted successfully",
-            data: deletedDragon,
+            // data: deletedDragon,
         });
 
     } catch (error) {
         console.error("Error in deleting dragon: ", error.message);
         res.status(404).json({success: false, msg: "Product not found"});
+    }
+})
+
+app.get("/api/dragons", async (req, res) => {
+    try {
+        const dragons = await Dragon.find({});
+        res.status(200).json({success: true, data: dragons});
+    } catch (error) {
+        console.error("Error in fetching dragons: ", error.message);
+        res.status(500).json({success: false, msg: "SERVER ERROR"});
     }
 })
 
