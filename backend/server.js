@@ -28,14 +28,35 @@ app.post("/api/dragons", async (req, res) => {
     }
 })
 
+app.put("/api/dragons/:id", async (req, res) => {
+    const {id} = req.params
+    const dragon = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid ID format' });
+    }
+
+
+    try {
+        const updatedDragon = await Dragon.findByIdAndUpdate(id, dragon, {new:true});
+
+        if (!updatedDragon) {
+            return res.status(404).json({ message: "Dragon not found" });
+        }
+
+        res.status(200).json({success: true, msg: "Dragon updated successfully"});
+    } catch (error) {
+        console.error("Error in updating dragon: ", error.message);
+        res.status(500).json({success: false, msg: "SERVER ERROR"});
+    }
+})
+
 app.delete("/api/dragons/:id", async (req, res) => {
     const {id} = req.params
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ message: 'Invalid ID format' });
     }
-    // console.log(mongoose.Types.ObjectId.isValid(id));
-
 
     try {
         // Call findByIdAndDelete to delete the dragon by ID
