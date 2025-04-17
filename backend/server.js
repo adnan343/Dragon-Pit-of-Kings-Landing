@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import {connectDB} from "./config/db.js";
 import Dragon from "./models/dragon.model.js";
 
@@ -24,6 +25,36 @@ app.post("/api/dragons", async (req, res) => {
     } catch (error) {
         console.error("Error in creating dragon: ", error.message);
         res.status(500).json({success: false, msg: "SERVER ERROR"});
+    }
+})
+
+app.delete("/api/dragons/:id", async (req, res) => {
+    const {id} = req.params
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid ID format' });
+    }
+    console.log(mongoose.Types.ObjectId.isValid(id));
+
+
+    try {
+        // Call findByIdAndDelete to delete the dragon by ID
+        const deletedDragon = await Dragon.findByIdAndDelete(dragonId);
+
+        // If no dragon was found, return 404
+        if (!deletedDragon) {
+            return res.status(404).json({ message: "Dragon not found" });
+        }
+
+        // Success: Dragon deleted
+        return res.status(200).json({
+            message: "Dragon deleted successfully",
+            data: deletedDragon,
+        });
+
+    } catch (error) {
+        console.error("Error in deleting dragon: ", error.message);
+        res.status(404).json({success: false, msg: "Product not found"});
     }
 })
 
