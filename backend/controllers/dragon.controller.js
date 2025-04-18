@@ -52,7 +52,7 @@ export const deleteDragon = async (req, res) => {
 
     } catch (error) {
         console.error("Error in deleting dragon: ", error.message);
-        res.status(404).json({success: false, msg: "Product not found"});
+        res.status(500).json({success: false, msg: "SERVER ERROR"});
     }
 }
 

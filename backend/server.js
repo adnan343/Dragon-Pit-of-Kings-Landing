@@ -4,6 +4,8 @@ import dragonRoutes from "./routes/dragon.route.js";
 
 const app = express();
 
+const PORT = process.env.PORT || 3000;
+
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -12,7 +14,7 @@ app.get('/', (req, res) => {
 
 app.use("/api/dragons", dragonRoutes)
 
-app.listen(3000, () => {
+app.listen(PORT, () => {
     connectDB();
     console.log('Server started at http://localhost:3000');
 });
