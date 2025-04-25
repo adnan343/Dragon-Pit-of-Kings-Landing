@@ -1,6 +1,7 @@
 import express from 'express';
 import {connectDB} from "./config/db.js";
 import dragonRoutes from "./routes/dragon.route.js";
+import userRoutes from "./routes/user.routes.js";
 
 const app = express();
 
@@ -13,6 +14,8 @@ app.get('/', (req, res) => {
 })
 
 app.use("/api/dragons", dragonRoutes)
+
+app.use("/api/users", userRoutes)
 
 app.listen(PORT, () => {
     connectDB();
