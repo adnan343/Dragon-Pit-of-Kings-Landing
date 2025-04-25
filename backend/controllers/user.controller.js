@@ -1,19 +1,28 @@
-import User from '../models/user.model.js';
-import mongoose from 'mongoose';
+import User from '../models/user.model.js'; // User model
+import mongoose from 'mongoose'; // Mongoose for database interaction
+import bcrypt from 'bcrypt'; // Import bcrypt for password hashing and verification
 
 export const createUser = async (req, res) => {
     const user = req.body;
+
+    // Ensure all required fields exist
     if (!user.username || !user.password || !user.name || !user.userType) {
         return res.status(400).json({ success: false, msg: "Please provide all the required fields" });
     }
 
     try {
+        // Check if username already exists
         const usernameExists = await checkUsernameExists(user.username);
         if (usernameExists) {
             return res.status(400).json({ success: false, msg: "Username already exists" });
         }
 
-        const newUser = new User(user);
+        // Hash the password before saving the user
+        const salt = await bcrypt.genSalt(10); // Generate salt
+        const hashedPassword = await bcrypt.hash(user.password, salt); // Hash password
+        user.password = hashedPassword;
+
+        const newUser = new User(user); // Create a new user with hashed password
         await newUser.save(); // Save the user to the database
         res.status(201).json({ success: true, msg: "User created successfully" });
     } catch (err) {
@@ -22,6 +31,39 @@ export const createUser = async (req, res) => {
     }
 };
 
+export const loginUser = async (req, res) => {
+    const { username, password } = req.body;
+
+    // Validate required fields
+    if (!username || !password) {
+        return res.status(400).json({ success: false, msg: "Please provide both username and password" });
+    }
+
+    try {
+        // Check if user exists in the database
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ success: false, msg: "User not found" });
+        }
+
+        // Compare input password with hashed password in the database
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ success: false, msg: "Invalid password" });
+        }
+
+        // If login is successful, respond back with user data (you can also generate a token here)
+        res.status(200).json({ 
+            success: true, 
+            msg: "User logged in successfully", 
+            data: { username: user.username, name: user.name, userType: user.userType } 
+        });
+
+    } catch (error) {
+        console.error("Error during login:", error.message);
+        res.status(500).json({ success: false, msg: "Internal Server Error" });
+    }
+};
 
 const checkUsernameExists = async (username) => {
     try {
@@ -41,10 +83,10 @@ const checkUsernameExists = async (username) => {
 
 export const getUsers = async (req, res) => {
     try {
-        const users = await User.find({})
-        res.status(200).json({success: true, data: users});
+        const users = await User.find({});
+        res.status(200).json({ success: true, data: users });
     } catch (error) {
         console.error("Error in fetching users: ", error.message);
-        res.status(500).json({success: false, msg: "SERVER ERROR"});
+        res.status(500).json({ success: false, msg: "SERVER ERROR" });
     }
-}
+};
