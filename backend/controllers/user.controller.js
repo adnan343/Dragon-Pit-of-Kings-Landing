@@ -1,5 +1,4 @@
 import User from '../models/user.model.js'; // User model
-import mongoose from 'mongoose'; // Mongoose for database interaction
 import bcrypt from 'bcrypt'; // Import bcrypt for password hashing and verification
 
 export const createUser = async (req, res) => {
