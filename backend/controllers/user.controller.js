@@ -31,6 +31,33 @@ export const createUser = async (req, res) => {
     }
 };
 
+export const deleteUser = async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) {
+        return res.status(400).json({ success: false, msg: "Please provide a user ID." });
+    }
+
+    try {
+        // Find user by ID and delete
+        const deletedUser = await User.findByIdAndDelete(id);
+
+        if (!deletedUser) {
+            return res.status(404).json({ success: false, msg: "User not found." });
+        }
+
+        res.status(200).json({
+            success: true,
+            msg: "User deleted successfully.",
+            data: { username: deletedUser.username, name: deletedUser.name }
+        });
+    } catch (error) {
+        console.error("Error deleting user: ", error.message);
+        res.status(500).json({ success: false, msg: "Internal Server Error." });
+    }
+};
+
+
 export const loginUser = async (req, res) => {
     const { username, password } = req.body;
 
