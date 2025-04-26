@@ -18,7 +18,14 @@ const UserSchema = new mongoose.Schema({
     userType: {
         type: String,
         required: true,
-    }
+    },
+    acquiredDragons: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Dragon'
+        }
+    ]
+
 }, {
     timestamps: true
 })

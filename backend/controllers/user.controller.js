@@ -30,6 +30,41 @@ export const createUser = async (req, res) => {
     }
 };
 
+export const updateUser = async (req, res) => {
+    const { id } = req.params; // Get user ID from request parameters
+    const updates = req.body; // Get update fields from request body
+
+    if (!id) {
+        return res.status(400).json({ success: false, msg: "Please provide a user ID." });
+    }
+
+    try {
+        // If a password update is included, hash it before saving
+        if (updates.password) {
+            const salt = await bcrypt.genSalt(10);
+            updates.password = await bcrypt.hash(updates.password, salt);
+        }
+
+        // Update the user by ID with the provided fields
+        const updatedUser = await User.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
+
+        // If user is not found, return error
+        if (!updatedUser) {
+            return res.status(404).json({ success: false, msg: "User not found." });
+        }
+
+        res.status(200).json({
+            success: true,
+            msg: "User updated successfully.",
+            data: updatedUser
+        });
+    } catch (error) {
+        console.error("Error updating user: ", error.message);
+        res.status(500).json({ success: false, msg: "Internal Server Error." });
+    }
+};
+
+
 export const deleteUser = async (req, res) => {
     const { id } = req.params;
 

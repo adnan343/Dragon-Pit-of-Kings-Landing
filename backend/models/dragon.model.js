@@ -19,7 +19,13 @@ const DragonSchema = new mongoose.Schema({
     },
     image: {
         type: String,
+    },
+    rider: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // Reference to the User model
+        default: null // Null if no rider has acquired the dragon yet
     }
+
 }, {
     timestamps: true // Add createdAt and updatedAt fields
 });
