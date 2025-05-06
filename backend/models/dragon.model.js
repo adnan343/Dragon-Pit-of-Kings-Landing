@@ -1,3 +1,4 @@
+
 import mongoose from 'mongoose';
 
 const DragonSchema = new mongoose.Schema({
@@ -56,6 +57,31 @@ const DragonSchema = new mongoose.Schema({
         preferredFood: {
             type: String,
             default: 'Meat'
+        }
+    },
+    fighting: {
+        strength: {
+            type: Number,
+            default: 50
+        },
+        agility: {
+            type: Number,
+            default: 50
+        },
+        wins: {
+            type: Number,
+            default: 0
+        },
+        losses: {
+            type: Number,
+            default: 0
+        },
+        draws: {
+            type: Number,
+            default: 0
+        },
+        lastFight: {
+            type: Date
         }
     },
     rider: {

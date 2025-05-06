@@ -4,6 +4,8 @@ import dragonRoutes from "./routes/dragon.route.js";
 import userRoutes from "./routes/user.routes.js";
 import dragonAcquisitionRoutes from './routes/dragonAcquisition.routes.js'; // New import
 import dragonkeeperRoutes from './routes/dragonkeeper.routes.js';
+import fightRoutes from './routes/fight.routes.js';
+
 
 
 
@@ -24,6 +26,9 @@ app.use("/api/users", userRoutes)
 app.use("/api/dragon-acquisition", dragonAcquisitionRoutes); // New route
 
 app.use('/api', dragonkeeperRoutes);
+
+app.use('/api/fights', fightRoutes);
+
 
 
 app.listen(PORT, () => {
