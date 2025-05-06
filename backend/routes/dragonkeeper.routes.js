@@ -1,13 +1,21 @@
-// backend/routes/dragonkeeper.routes.js
 import express from 'express';
-import { updateDragonHealth, healDragon } from '../controllers/dragonkeeper.controller.js';
+import {
+    updateDragonHealth,
+    healDragon,
+    feedDragon,
+    checkDragonHunger,
+    updatePreferredFood
+} from '../controllers/dragonkeeper.controller.js';
 
 const router = express.Router();
 
-// Route for updating dragon health
+// Health management routes
 router.patch('/dragons/:dragonId/health', updateDragonHealth);
-
-// Route for healing a dragon
 router.post('/dragons/:dragonId/heal', healDragon);
+
+// Feeding management routes
+router.post('/dragons/:dragonId/feed', feedDragon);
+router.get('/dragons/:dragonId/hunger', checkDragonHunger);
+router.patch('/dragons/:dragonId/preferred-food', updatePreferredFood);
 
 export default router;
