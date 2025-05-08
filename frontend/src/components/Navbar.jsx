@@ -21,7 +21,7 @@ const Navbar = () => {
                     bgGradient={"linear(to-r, red.500, orange.400)"}
                     bgClip={"text"}
                 >
-                    <RouterLink to={"/"}>Dragon Sanctuary 🐉</RouterLink>
+                    <RouterLink to={"/"}>Dragon Pit of King's Landing 🐉</RouterLink>
                 </Text>
 
                 <HStack spacing={4}>

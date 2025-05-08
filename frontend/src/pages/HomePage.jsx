@@ -130,7 +130,7 @@ const HomePage = () => {
                     bgGradient="linear(to-r, red.500, orange.400)"
                     bgClip="text"
                 >
-                    Welcome to Dragon Sanctuary
+                    Welcome to The Dragon Pit!
                 </Heading>
                 <Text fontSize="xl" maxW="800px" mx="auto">
                     Discover magnificent dragons seeking companionship and adventure
