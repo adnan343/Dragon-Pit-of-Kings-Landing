@@ -43,6 +43,14 @@ const Navbar = () => {
                     </Button>
                     <Button
                         as={RouterLink}
+                        to="/add-dragon"
+                        colorScheme="red"
+                        variant="ghost"
+                    >
+                        Add Dragon
+                    </Button>
+                    <Button
+                        as={RouterLink}
                         to="/login"
                         colorScheme="red"
                     >
