@@ -51,7 +51,7 @@ const LoginPage = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('/api/users/login', {
+            const response = await fetch('/api/users/login', {  // Ensure this matches your backend route
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

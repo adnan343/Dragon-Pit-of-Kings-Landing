@@ -1,15 +1,27 @@
 import { Container, Flex, Button, Text, HStack, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { useAuth } from '../context/AuthContext';
+import { useState, useEffect } from 'react';
 
 const Navbar = () => {
-    const { user, isAuthenticated, logout } = useAuth();
+    const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        // Check if user data exists in localStorage
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
+    }, []);
+
     const handleLogout = () => {
-        logout();
+        localStorage.removeItem('user');
+        setUser(null);
         navigate('/');
     };
+
+    // Check if the user is admin
+    const isAdmin = user && user.userType === 'admin';
 
     return (
         <Container maxW={"1140px"} px={4}>
@@ -50,7 +62,8 @@ const Navbar = () => {
                     >
                         Riders
                     </Button>
-                    {isAuthenticated && (
+
+                    {isAdmin && (
                         <Button
                             as={RouterLink}
                             to="/add-dragon"
@@ -61,10 +74,10 @@ const Navbar = () => {
                         </Button>
                     )}
 
-                    {isAuthenticated ? (
+                    {user ? (
                         <Menu>
                             <MenuButton as={Button} colorScheme="red">
-                                {user.name || user.username}
+                                {user.name} ({user.userType})
                             </MenuButton>
                             <MenuList>
                                 <MenuItem as={RouterLink} to="/profile">Profile</MenuItem>
