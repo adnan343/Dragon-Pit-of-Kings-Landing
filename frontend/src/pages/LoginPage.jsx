@@ -14,6 +14,7 @@ import {
     InputRightElement
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
+import log from "eslint-plugin-react/lib/util/log.js";
 
 const LoginPage = () => {
     const [formData, setFormData] = useState({

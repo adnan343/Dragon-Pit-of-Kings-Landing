@@ -94,6 +94,7 @@ export const deleteUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
     const { username, password } = req.body;
+    console.log(username, password);
 
     // Validate required fields
     if (!username || !password) {

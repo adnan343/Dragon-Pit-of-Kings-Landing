@@ -6,6 +6,8 @@ import mongoose from 'mongoose';
 // Import routes
 import dragonRoutes from './routes/dragon.route.js';
 import dragonAcquisitionRoutes from './routes/dragonAcquisition.routes.js';
+import userRoutes from './routes/user.routes.js';
+
 // Import other routes as needed...
 
 // Load environment variables
@@ -17,6 +19,7 @@ const app = express();
 // Middleware
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json()); // Parse JSON request bodies
+app.use('/api/users', userRoutes);
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
     next();
