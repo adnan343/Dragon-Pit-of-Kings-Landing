@@ -67,15 +67,55 @@ const HomePage = () => {
         const fetchDragons = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get("/api/dragons");
-                setDragons(response.data);
+                console.log("Fetching dragons from API...");
+
+                // Try with explicit URL for testing
+                const response = await axios.get("http://localhost:3000/api/dragons");
+                console.log("API Response:", response);
+
+                if (response.data && response.data.data) {
+                    console.log("Dragon data found:", response.data.data);
+                    setDragons(response.data.data);
+                } else {
+                    console.error("Unexpected data format:", response.data);
+                    setDragons([]);
+                }
                 setLoading(false);
             } catch (err) {
-                setError("Failed to load dragons. Please try again later.");
+                console.error("Error details:", err);
+
+                // Fallback to test data if API fails
+                console.log("Using fallback test data...");
+                const testDragons = [
+                    {
+                        _id: '1',
+                        name: 'Drogon',
+                        size: 'Large',
+                        age: 8,
+                        description: 'Black dragon with red accents, fierce and loyal'
+                    },
+                    {
+                        _id: '2',
+                        name: 'Rhaegal',
+                        size: 'Medium',
+                        age: 7,
+                        description: 'Green scales, more docile than his siblings'
+                    },
+                    {
+                        _id: '3',
+                        name: 'Viserion',
+                        size: 'Medium',
+                        age: 7,
+                        description: 'Cream and gold colored dragon, curious and intelligent'
+                    }
+                ];
+                setDragons(testDragons);
                 setLoading(false);
-                console.error("Error fetching dragons:", err);
+                // Keep error message in the UI for debugging
+                setError(`API Error: ${err.message}. Using test data instead.`);
             }
         };
+
 
         fetchDragons();
     }, []);

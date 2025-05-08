@@ -17,6 +17,11 @@ const app = express();
 // Middleware
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json()); // Parse JSON request bodies
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+    next();
+});
+
 
 // Connect to MongoDB
 const connectDB = async () => {
@@ -49,11 +54,47 @@ app.use((err, req, res, next) => {
     });
 });
 
+const addTestDragons = async () => {
+    try {
+        const count = await Dragon.countDocuments();
+        if (count === 0) {
+            console.log('Adding test dragons...');
+            await Dragon.create([
+                {
+                    name: 'Drogon',
+                    size: 'Large',
+                    age: 8,
+                    description: 'Black dragon with red accents, fierce and loyal'
+                },
+                {
+                    name: 'Rhaegal',
+                    size: 'Medium',
+                    age: 7,
+                    description: 'Green scales, more docile than his siblings'
+                },
+                {
+                    name: 'Viserion',
+                    size: 'Medium',
+                    age: 7,
+                    description: 'Cream and gold colored dragon, curious and intelligent'
+                }
+            ]);
+            console.log('Test dragons added');
+        } else {
+            console.log(`${count} dragons already in database`);
+        }
+    } catch (error) {
+        console.error('Error adding test dragons:', error);
+    }
+};
+
+
 // Start server
 const PORT = process.env.PORT || 5000;
 
 // Connect to database then start server
-connectDB().then(() => {
+connectDB().then(async () => {
+    await addTestDragons();
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
     });

@@ -1,16 +1,17 @@
+// Create dragon.model.js if it doesn't exist
 import mongoose from 'mongoose';
 
-const DragonSchema = new mongoose.Schema({
+const dragonSchema = new mongoose.Schema({
     name: {
-        type: String,
-        required: true
-    },
-    size: {
         type: String,
         required: true
     },
     age: {
         type: Number,
+        required: true
+    },
+    size: {
+        type: String,
         required: true
     },
     description: {
@@ -19,17 +20,16 @@ const DragonSchema = new mongoose.Schema({
     },
     image: {
         type: String,
+        default: 'https://via.placeholder.com/300x200?text=Dragon'
     },
     rider: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Reference to the User model
-        default: null // Null if no rider has acquired the dragon yet
+        type: String,
+        default: null
     }
-
 }, {
-    timestamps: true // Add createdAt and updatedAt fields
+    timestamps: true
 });
 
-const Dragon = mongoose.model('Dragon', DragonSchema);
+const Dragon = mongoose.model('Dragon', dragonSchema);
 
 export default Dragon;
