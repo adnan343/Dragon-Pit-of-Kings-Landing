@@ -1,28 +1,67 @@
 import express from 'express';
-import {connectDB} from "./config/db.js";
-import dragonRoutes from "./routes/dragon.route.js";
-import userRoutes from "./routes/user.routes.js";
-import dragonAcquisitionRoutes from './routes/dragonAcquisition.routes.js'; // New import
+import cors from 'cors';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 
+// Import routes
+import dragonRoutes from './routes/dragon.route.js';
+import dragonAcquisitionRoutes from './routes/dragonAcquisition.routes.js';
+// Import other routes as needed...
 
+// Load environment variables
+dotenv.config();
+
+// Initialize express app
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+// Middleware
+app.use(cors()); // Enable CORS for all routes
+app.use(express.json()); // Parse JSON request bodies
 
-app.use(express.json());
+// Connect to MongoDB
+const connectDB = async () => {
+    try {
+        const conn = await mongoose.connect(process.env.MONGO_URI);
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
+    } catch (error) {
+        console.error(`Error: ${error.message}`);
+        process.exit(1);
+    }
+};
 
+// Routes
+app.use('/api', dragonRoutes);
+app.use('/api', dragonAcquisitionRoutes);
+// Add other routes as needed...
+
+// Base route for testing API
 app.get('/', (req, res) => {
-    res.send('Hello World');
-})
-
-app.use("/api/dragons", dragonRoutes)
-
-app.use("/api/users", userRoutes)
-
-app.use("/api/dragon-acquisition", dragonAcquisitionRoutes); // New route
-
-app.listen(PORT, () => {
-    connectDB();
-    console.log('Server started at http://localhost:3000');
+    res.send('API is running...');
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+    const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+    res.status(statusCode);
+    res.json({
+        message: err.message,
+        stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+    });
+});
+
+// Start server
+const PORT = process.env.PORT || 5000;
+
+// Connect to database then start server
+connectDB().then(() => {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+    console.log(`Error: ${err.message}`);
+    // Close server & exit process
+    process.exit(1);
+});
