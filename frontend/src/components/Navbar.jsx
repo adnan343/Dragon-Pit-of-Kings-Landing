@@ -1,7 +1,16 @@
-import { Container, Flex, Button, Text, HStack } from "@chakra-ui/react";
-import { Link as RouterLink } from "react-router-dom";
+import { Container, Flex, Button, Text, HStack, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
+    const { user, isAuthenticated, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/');
+    };
+
     return (
         <Container maxW={"1140px"} px={4}>
             <Flex
@@ -41,21 +50,36 @@ const Navbar = () => {
                     >
                         Riders
                     </Button>
-                    <Button
-                        as={RouterLink}
-                        to="/add-dragon"
-                        colorScheme="red"
-                        variant="ghost"
-                    >
-                        Add Dragon
-                    </Button>
-                    <Button
-                        as={RouterLink}
-                        to="/login"
-                        colorScheme="red"
-                    >
-                        Login
-                    </Button>
+                    {isAuthenticated && (
+                        <Button
+                            as={RouterLink}
+                            to="/add-dragon"
+                            colorScheme="red"
+                            variant="ghost"
+                        >
+                            Add Dragon
+                        </Button>
+                    )}
+
+                    {isAuthenticated ? (
+                        <Menu>
+                            <MenuButton as={Button} colorScheme="red">
+                                {user.name || user.username}
+                            </MenuButton>
+                            <MenuList>
+                                <MenuItem as={RouterLink} to="/profile">Profile</MenuItem>
+                                <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                            </MenuList>
+                        </Menu>
+                    ) : (
+                        <Button
+                            as={RouterLink}
+                            to="/login"
+                            colorScheme="red"
+                        >
+                            Login
+                        </Button>
+                    )}
                 </HStack>
             </Flex>
         </Container>
