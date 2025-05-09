@@ -1,17 +1,16 @@
-
 import mongoose from 'mongoose';
 
-const DragonSchema = new mongoose.Schema({
+const dragonSchema = new mongoose.Schema({
     name: {
-        type: String,
-        required: true
-    },
-    size: {
         type: String,
         required: true
     },
     age: {
         type: Number,
+        required: true
+    },
+    size: {
+        type: String,
         required: true
     },
     description: {
@@ -20,6 +19,7 @@ const DragonSchema = new mongoose.Schema({
     },
     image: {
         type: String,
+        default: 'https://via.placeholder.com/300x200?text=Dragon'
     },
     health: {
         currentHealth: {
@@ -85,13 +85,13 @@ const DragonSchema = new mongoose.Schema({
         }
     },
     rider: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Reference to the User model
-        default: null // Null if no rider has acquired the dragon yet
+        type: String,
+        default: null
     }
 }, {
-    timestamps: true // Add createdAt and updatedAt fields
+    timestamps: true
 });
+
 
 // Add pre-save hook to ensure hunger level is updated based on last feeding time
 DragonSchema.pre('save', function(next) {
@@ -117,5 +117,6 @@ DragonSchema.pre('save', function(next) {
 });
 
 const Dragon = mongoose.model('Dragon', DragonSchema);
+
 
 export default Dragon;

@@ -1,0 +1,170 @@
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Box,
+  Text,
+  Avatar,
+  Stack,
+  Button,
+  useToast,
+  Spinner,
+  Badge,
+  VStack,
+  Divider,
+  Flex,
+  Center,
+  Image,
+} from "@chakra-ui/react";
+
+const ProfilePage = () => {
+  const { userId } = useParams(); // Get userId from the URL
+  const [user, setUser] = useState(null);
+  const [dragons, setDragons] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const toast = useToast();
+  const navigate = useNavigate();
+
+  // Fetch the user and their dragon data
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/users/${userId}`
+        );
+        const result = await response.json();
+
+        if (result.success) {
+          setUser(result.data);
+
+          // Fetch dragon data if the user has acquired dragons
+          if (
+            result.data.acquiredDragons &&
+            result.data.acquiredDragons.length > 0
+          ) {
+            const dragonDataPromises = result.data.acquiredDragons.map(
+              (dragonId) =>
+                fetch(
+                  `http://localhost:3000/api/dragons/${dragonId}`
+                ).then((res) => res.json())
+            );
+            const dragonResults = await Promise.all(dragonDataPromises);
+
+            // Filter only successful dragon responses
+            const validDragons = dragonResults
+              .filter((res) => res.success)
+              .map((res) => res.data);
+            setDragons(validDragons);
+          }
+        } else {
+          toast({
+            title: "Error",
+            description: "User not found.",
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [userId, toast]);
+
+  if (loading) {
+    return (
+      <Center h="100vh">
+        <Spinner size="xl" />
+      </Center>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Center h="100vh">
+        <Text fontSize="xl" color="gray.500">
+          User not found.
+        </Text>
+      </Center>
+    );
+  }
+
+  return (
+    <Box py={8} px={{ base: 4, lg: 10 }} maxW="900px" mx="auto">
+      <Flex direction="column" align="center" justify="center">
+        <Text fontSize="3xl" fontWeight="bold" color="gray.800" mb={2}>
+          {user.name}
+        </Text>
+        <Text fontSize="xl" color="gray.600" mb={4}>
+          @{user.username}
+        </Text>
+        <Text fontSize="lg" color="gray.500" mb={6}>
+          User Type:{" "}
+          <Badge
+            colorScheme={user.userType === "Dragon Rider" ? "green" : "blue"}
+          >
+            {user.userType}
+          </Badge>
+        </Text>
+
+        <VStack align="start" spacing={4} w="full" mb={6}>
+          <Text fontSize="lg" fontWeight="bold" color="gray.600">
+            Acquired Dragons:
+          </Text>
+          {dragons.length > 0 ? (
+            <VStack align="start" spacing={4}>
+              {dragons.map((dragon, index) => (
+                <Box
+                  key={dragon._id}
+                  p={4}
+                  borderWidth={1}
+                  borderRadius="md"
+                  boxShadow="md"
+                  w="full"
+                >
+                  <Flex direction="column" align="start">
+                    <Text fontSize="lg" fontWeight="bold" color="gray.700">
+                      {dragon.name}
+                    </Text>
+                    <Text fontSize="md" color="gray.600">
+                      Age: {dragon.age} years
+                    </Text>
+                    <Text fontSize="md" color="gray.600">
+                      Size: {dragon.size}
+                    </Text>
+                  </Flex>
+                </Box>
+              ))}
+            </VStack>
+          ) : (
+            <Text color="gray.500">No dragons acquired yet.</Text>
+          )}
+
+          <Text fontSize="lg" fontWeight="bold" color="gray.600">
+            Member Since:
+          </Text>
+          <Text fontSize="lg" color="gray.500">
+            {new Date(user.createdAt).toLocaleDateString()}
+          </Text>
+        </VStack>
+
+        <Divider my={4} />
+
+        <Button colorScheme="red" onClick={() => navigate("/riders")}>
+          Back to Riders
+        </Button>
+      </Flex>
+    </Box>
+  );
+};
+
+export default ProfilePage;
