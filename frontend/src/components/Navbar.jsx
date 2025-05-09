@@ -19,6 +19,7 @@ const Navbar = () => {
 
   // Check if the user is admin
   const isAdmin = user && user.userType === "admin";
+  const isDragonRider = user && user.userType === "Dragon Rider";
 
   const handleLogout = () => {
     logout(); // Call logout from AuthContext
@@ -68,6 +69,16 @@ const Navbar = () => {
           >
             Fights
           </Button>
+          {isDragonRider && (
+            <Button
+              as={RouterLink}
+              to="/initiate-fight"
+              colorScheme="red"
+              variant="ghost"
+            >
+              Initiate Fight
+            </Button>
+          )}
 
           {isAdmin && (
             <Button

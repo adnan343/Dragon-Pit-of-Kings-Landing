@@ -58,6 +58,7 @@ const DragonDetails = () => {
   const cancelRef = useRef();
   const [hasRider, setHasRider] = useState(false);
   const [isCurrentUserRider, setIsCurrentUserRider] = useState(false);
+  const [fights, setFights] = useState([]);
 
   // Get user information from AuthContext using the useAuth hook
   const { user } = useAuth();
@@ -91,6 +92,18 @@ const DragonDetails = () => {
             console.error("Error fetching rider details:", error);
           }
         }
+        const fetchDragonFights = async (dragonId) => {
+          try {
+            const fightsResponse = await axios.get(
+              `http://localhost:3000/api/fights/dragon/${dragonId}`
+            );
+            if (fightsResponse.data.success) {
+              setFights(fightsResponse.data.fights);
+            }
+          } catch (error) {
+            console.error("Error fetching dragon fights:", error);
+          }
+        };
 
         // Check if current user is the rider
         if (user && dragonHasRider) {
@@ -112,6 +125,7 @@ const DragonDetails = () => {
             setIsCurrentUserRider(false);
           }
         }
+        await fetchDragonFights(id);
 
         setLoading(false);
       } catch (error) {
@@ -541,6 +555,109 @@ const DragonDetails = () => {
                   <strong>Description:</strong> {dragon.description}
                 </Text>
               </Stack>
+            </Box>
+          </GridItem>
+          <GridItem colSpan={2}>
+            <Box p={6} borderWidth={1} borderRadius="lg">
+              <Heading size="md" mb={4}>
+                Recent Fights
+              </Heading>
+              {fights.length > 0 ? (
+                <Stack spacing={4}>
+                  {fights.slice(0, 3).map((fight) => (
+                    <Box
+                      key={fight._id}
+                      p={3}
+                      borderWidth={1}
+                      borderRadius="md"
+                    >
+                      <HStack justifyContent="space-between" mb={2}>
+                        <Text fontWeight="bold">
+                          {new Date(fight.fightDate).toLocaleDateString()}
+                        </Text>
+                        <Badge
+                          colorScheme={
+                            fight.status === "completed"
+                              ? fight.result.isDraw
+                                ? "blue"
+                                : fight.result.winner === dragon._id
+                                ? "green"
+                                : "red"
+                              : "gray"
+                          }
+                        >
+                          {fight.status === "completed"
+                            ? fight.result.isDraw
+                              ? "Draw"
+                              : fight.result.winner === dragon._id
+                              ? "Victory"
+                              : "Defeat"
+                            : "Cancelled"}
+                        </Badge>
+                      </HStack>
+
+                      <Grid templateColumns="repeat(3, 1fr)" gap={2}>
+                        <GridItem>
+                          <Text fontSize="sm" fontWeight="medium">
+                            {fight.challenger.dragon._id === dragon._id
+                              ? "You"
+                              : fight.challenger.dragon.name}
+                          </Text>
+                          <Text fontSize="xs" color="gray.500">
+                            Rider: {fight.challenger.rider.username}
+                          </Text>
+                        </GridItem>
+
+                        <GridItem textAlign="center">
+                          {fight.status === "completed" ? (
+                            <Text fontWeight="bold">
+                              {fight.result.isDraw
+                                ? `${fight.result.winnerScore} - ${fight.result.loserScore}`
+                                : fight.result.winner ===
+                                  fight.challenger.dragon._id
+                                ? `${fight.result.winnerScore} - ${fight.result.loserScore}`
+                                : `${fight.result.loserScore} - ${fight.result.winnerScore}`}
+                            </Text>
+                          ) : (
+                            <Text fontStyle="italic">Cancelled</Text>
+                          )}
+                          <Text fontSize="xs">
+                            {fight.fightDetails.rounds}{" "}
+                            {fight.fightDetails.rounds === 1
+                              ? "round"
+                              : "rounds"}
+                          </Text>
+                        </GridItem>
+
+                        <GridItem textAlign="right">
+                          <Text fontSize="sm" fontWeight="medium">
+                            {fight.opponent.dragon._id === dragon._id
+                              ? "You"
+                              : fight.opponent.dragon.name}
+                          </Text>
+                          <Text fontSize="xs" color="gray.500">
+                            Rider: {fight.opponent.rider.username}
+                          </Text>
+                        </GridItem>
+                      </Grid>
+
+                      {fight.fightDetails.notes && (
+                        <Text fontSize="xs" mt={2} color="gray.500">
+                          Notes: {fight.fightDetails.notes}
+                        </Text>
+                      )}
+                    </Box>
+                  ))}
+
+                  {fights.length > 3 && (
+                    <Button size="sm" variant="outline" colorScheme="blue">
+                      View All Fights
+                    </Button>
+                  )}
+                </Stack>
+              ) : (
+                <Text>No fight history available for this dragon.</Text>
+              )}
             </Box>
           </GridItem>
         </Grid>

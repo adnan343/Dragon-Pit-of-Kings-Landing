@@ -18,6 +18,7 @@ const AddDragonPage = () => {
     age: "",
     size: "",
     description: "",
+    image: "", // Added image URL field
   });
 
   const toast = useToast();
@@ -42,7 +43,7 @@ const AddDragonPage = () => {
     ) {
       toast({
         title: "Missing Fields",
-        description: "Please fill in all fields.",
+        description: "Please fill in all required fields.",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -72,9 +73,12 @@ const AddDragonPage = () => {
           age: "",
           size: "",
           description: "",
+          image: "",
         });
       } else {
-        throw new Error("Failed to add dragon");
+        const errorData = await response.json();
+        const errorMessage = errorData?.message || "Failed to add dragon";
+        throw new Error(errorMessage);
       }
     } catch (error) {
       toast({
@@ -141,6 +145,18 @@ const AddDragonPage = () => {
               onChange={handleChange}
               placeholder="Describe your dragon"
               size="sm"
+            />
+          </FormControl>
+
+          <FormControl>
+            <FormLabel htmlFor="image">Dragon Image URL (Optional)</FormLabel>
+            <Input
+              id="image"
+              name="image"
+              type="url"
+              value={formData.image}
+              onChange={handleChange}
+              placeholder="Enter image URL (e.g., http://...)"
             />
           </FormControl>
 

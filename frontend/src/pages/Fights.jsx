@@ -109,6 +109,8 @@ const Fights = () => {
                 {/* Check for Draw or Cancelled */}
                 {fight.status === "cancelled" ? (
                   <Badge colorScheme="red">Cancelled</Badge>
+                ) : fight.status === "pending" ? (
+                  <Badge colorScheme="yellow">Pending</Badge>
                 ) : fight.result.isDraw ? (
                   <Badge colorScheme="yellow">Draw</Badge>
                 ) : (
