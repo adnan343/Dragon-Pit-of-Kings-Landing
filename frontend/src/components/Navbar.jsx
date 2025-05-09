@@ -61,10 +61,10 @@ const Navbar = () => {
           </Button>
 
           <Button
-              as={RouterLink}
-              to="/fights"
-              colorScheme="red"
-              variant="ghost"
+            as={RouterLink}
+            to="/fights"
+            colorScheme="red"
+            variant="ghost"
           >
             Fights
           </Button>
@@ -86,7 +86,7 @@ const Navbar = () => {
                 {user.username} ({user.userType})
               </MenuButton>
               <MenuList>
-                <MenuItem as={RouterLink} to="/profile">
+                <MenuItem as={RouterLink} to={`/profile/${user.userId}`}>
                   Profile
                 </MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
