@@ -87,7 +87,11 @@ const Fights = () => {
   const handleSubmit = async () => {
     try {
       const payload = { ...formData };
-      if (payload.isDraw) delete payload.winnerDragonId;
+      const isDraw = payload.isDraw;
+
+      if (isDraw) {
+        delete payload.winnerDragonId;
+      }
 
       const res = await fetch("http://localhost:3000/api/fights/complete", {
         method: "POST",
@@ -96,6 +100,29 @@ const Fights = () => {
       });
 
       if (!res.ok) throw new Error("Failed to update fight");
+
+      // Adjust HP if not a draw
+      if (!isDraw) {
+        const winnerId = payload.winnerDragonId;
+        const loserId =
+          winnerId === selectedFight.challenger.dragon._id
+            ? selectedFight.opponent.dragon._id
+            : selectedFight.challenger.dragon._id;
+
+        // Heal winner by 5
+        await fetch(`http://localhost:3000/api/dragons/${winnerId}/heal`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ healAmount: 5 }),
+        });
+
+        // Damage loser by 15
+        await fetch(`http://localhost:3000/api/dragons/${loserId}/damage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ damageAmount: 15 }),
+        });
+      }
 
       toast({ title: "Fight updated.", status: "success", duration: 3000 });
       onClose();
