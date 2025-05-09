@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
     Box,
     Container,
@@ -23,9 +23,10 @@ import {
     AlertDialogHeader,
     AlertDialogContent,
     AlertDialogOverlay,
+    HStack,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext'; // Import useAuth hook
+import { useAuth } from '../context/AuthContext';
 
 const DragonDetails = () => {
     const { id } = useParams();
@@ -33,14 +34,19 @@ const DragonDetails = () => {
     const toast = useToast();
     const [dragon, setDragon] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [riderDetails, setRiderDetails] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isAcquiring, setIsAcquiring] = useState(false);
     const [isAlertOpen, setIsAlertOpen] = useState(false);
+    const [isAcquireAlertOpen, setIsAcquireAlertOpen] = useState(false);
     const cancelRef = useRef();
 
     // Get user information from AuthContext using the useAuth hook
     const { user } = useAuth();
-    // Check if user is admin based on userType property (not role)
     const isAdmin = user && user.userType === "admin";
+    const isRider = user && user.userType === "rider";
+    const hasRider = dragon?.rider;
+    const isCurrentUserRider = dragon?.rider === user?.username;
 
     useEffect(() => {
         const fetchDragonDetails = async () => {
@@ -48,6 +54,12 @@ const DragonDetails = () => {
                 const response = await axios.get(`/api/dragons/${id}`);
                 setDragon(response.data.data);
                 setLoading(false);
+
+                // Fetch rider details if there's a rider assigned
+                if (response.data.data.rider) {
+                    const riderResponse = await axios.get(`/api/users/${response.data.data.rider}`);
+                    setRiderDetails(riderResponse.data.data);
+                }
             } catch (error) {
                 console.error('Error fetching dragon details:', error);
                 setLoading(false);
@@ -59,6 +71,10 @@ const DragonDetails = () => {
 
     const handleDeleteClick = () => {
         setIsAlertOpen(true);
+    };
+
+    const handleAcquireClick = () => {
+        setIsAcquireAlertOpen(true);
     };
 
     const handleDeleteConfirm = async () => {
@@ -88,6 +104,74 @@ const DragonDetails = () => {
         }
     };
 
+    const handleAcquireConfirm = async () => {
+        setIsAcquiring(true);
+        try {
+            const response = await axios.put(`/api/dragons/${id}`, {
+                rider: user.username
+            });
+
+            setDragon(prev => ({
+                ...prev,
+                rider: user.username
+            }));
+
+            toast({
+                title: "Dragon acquired",
+                description: `You are now the rider of ${dragon.name}!`,
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+            });
+        } catch (error) {
+            console.error('Error acquiring dragon:', error);
+            toast({
+                title: "Error",
+                description: "Failed to acquire this dragon. Please try again.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
+        } finally {
+            setIsAcquiring(false);
+            setIsAcquireAlertOpen(false);
+        }
+    };
+
+    const handleReleaseConfirm = async () => {
+        setIsAcquiring(true);
+        try {
+            const response = await axios.put(`/api/dragons/${id}`, {
+                rider: null
+            });
+
+            setDragon(prev => ({
+                ...prev,
+                rider: null
+            }));
+
+            toast({
+                title: "Dragon released",
+                description: `You have released ${dragon.name}.`,
+                status: "info",
+                duration: 5000,
+                isClosable: true,
+            });
+        } catch (error) {
+            console.error('Error releasing dragon:', error);
+            toast({
+                title: "Error",
+                description: "Failed to release this dragon. Please try again.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
+        } finally {
+            setIsAcquiring(false);
+            setIsAcquireAlertOpen(false);
+        }
+    };
+
     if (loading) {
         return <Text>Loading...</Text>;
     }
@@ -114,9 +198,31 @@ const DragonDetails = () => {
                         mx="auto"
                     />
 
-                    {/* Admin Delete Button */}
-                    {isAdmin && (
-                        <Box mt={4} textAlign="right">
+                    {/* Action Buttons */}
+                    <HStack mt={4} justifyContent="flex-end">
+                        {isRider && !hasRider && (
+                            <Button
+                                colorScheme="green"
+                                onClick={handleAcquireClick}
+                                isLoading={isAcquiring}
+                                loadingText="Acquiring..."
+                            >
+                                Acquire Dragon
+                            </Button>
+                        )}
+
+                        {isRider && isCurrentUserRider && (
+                            <Button
+                                colorScheme="orange"
+                                onClick={handleAcquireClick}
+                                isLoading={isAcquiring}
+                                loadingText="Releasing..."
+                            >
+                                Release Dragon
+                            </Button>
+                        )}
+
+                        {isAdmin && (
                             <Button
                                 colorScheme="red"
                                 onClick={handleDeleteClick}
@@ -125,8 +231,8 @@ const DragonDetails = () => {
                             >
                                 Delete Dragon
                             </Button>
-                        </Box>
-                    )}
+                        )}
+                    </HStack>
                 </Box>
 
                 <Grid templateColumns={["1fr", null, "repeat(2, 1fr)"]} gap={6}>
@@ -189,7 +295,16 @@ const DragonDetails = () => {
                         <Box p={6} borderWidth={1} borderRadius="lg">
                             <Heading size="md" mb={4}>Dragon Details</Heading>
                             <Stack spacing={3}>
-                                <Text><strong>Rider:</strong> {dragon.rider || 'No rider assigned'}</Text>
+                                <Text>
+                                    <strong>Rider:</strong>{' '}
+                                    {riderDetails ? (
+                                        <Link to={`/profile/${riderDetails.id}`}>
+                                            <Badge colorScheme="purple">{riderDetails.name}</Badge>
+                                        </Link>
+                                    ) : (
+                                        'No rider assigned'
+                                    )}
+                                </Text>
                                 <Text><strong>Age:</strong> {dragon.age} years</Text>
                                 <Text><strong>Size:</strong> {dragon.size}</Text>
                                 <Text><strong>Description:</strong> {dragon.description}</Text>
@@ -199,7 +314,7 @@ const DragonDetails = () => {
                 </Grid>
             </Stack>
 
-            {/* Confirmation Dialog */}
+            {/* Delete Confirmation Dialog */}
             <AlertDialog
                 isOpen={isAlertOpen}
                 leastDestructiveRef={cancelRef}
@@ -221,6 +336,42 @@ const DragonDetails = () => {
                             </Button>
                             <Button colorScheme="red" onClick={handleDeleteConfirm} ml={3} isLoading={isDeleting}>
                                 Delete
+                            </Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialogOverlay>
+            </AlertDialog>
+
+            {/* Acquire/Release Confirmation Dialog */}
+            <AlertDialog
+                isOpen={isAcquireAlertOpen}
+                leastDestructiveRef={cancelRef}
+                onClose={() => setIsAcquireAlertOpen(false)}
+            >
+                <AlertDialogOverlay>
+                    <AlertDialogContent>
+                        <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                            {isCurrentUserRider ? "Release Dragon" : "Acquire Dragon"}
+                        </AlertDialogHeader>
+
+                        <AlertDialogBody>
+                            {isCurrentUserRider
+                                ? `Are you sure you want to release ${dragon.name}? Another rider may claim this dragon.`
+                                : `Are you sure you want to become the rider of ${dragon.name}?`
+                            }
+                        </AlertDialogBody>
+
+                        <AlertDialogFooter>
+                            <Button ref={cancelRef} onClick={() => setIsAcquireAlertOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button
+                                colorScheme={isCurrentUserRider ? "orange" : "green"}
+                                onClick={isCurrentUserRider ? handleReleaseConfirm : handleAcquireConfirm}
+                                ml={3}
+                                isLoading={isAcquiring}
+                            >
+                                {isCurrentUserRider ? "Release" : "Acquire"}
                             </Button>
                         </AlertDialogFooter>
                     </AlertDialogContent>
