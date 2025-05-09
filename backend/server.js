@@ -37,7 +37,7 @@ const connectDB = async () => {
 };
 
 // Routes
-app.use("/api", dragonRoutes);
+app.use("/api/dragons", dragonRoutes);
 app.use("/api/acquire", dragonAcquisitionRoutes);
 // Add other routes as needed...
 

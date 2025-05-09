@@ -10,7 +10,7 @@ import {
 const router = express.Router();
 console.log("Registering dragon routes");
 
-router.post("/dragons", createDragon);
+router.post("/", createDragon);
 
 router.put("/:id", updateDragon);
 
@@ -21,6 +21,6 @@ router.get("/test", (req, res) => {
   res.json({ message: "Dragon API is working" });
 });
 
-router.get("/dragons", getDragons);
+router.get("/all", getDragons);
 
 export default router;
