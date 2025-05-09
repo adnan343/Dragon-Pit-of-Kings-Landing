@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   Box,
   Text,
-  Avatar,
-  Stack,
   Button,
   useToast,
   Spinner,
@@ -13,7 +11,8 @@ import {
   Divider,
   Flex,
   Center,
-  Image,
+  Grid,
+  GridItem,
 } from "@chakra-ui/react";
 
 const ProfilePage = () => {
@@ -120,34 +119,50 @@ const ProfilePage = () => {
           <Text fontSize="lg" fontWeight="bold" color="gray.600">
             Acquired Dragons:
           </Text>
-          {dragons.length > 0 ? (
-            <VStack align="start" spacing={4}>
-              {dragons.map((dragon, index) => (
-                <Box
-                  key={dragon._id}
-                  p={4}
-                  borderWidth={1}
-                  borderRadius="md"
-                  boxShadow="md"
-                  w="full"
-                >
-                  <Flex direction="column" align="start">
-                    <Text fontSize="lg" fontWeight="bold" color="gray.700">
-                      {dragon.name}
-                    </Text>
-                    <Text fontSize="md" color="gray.600">
-                      Age: {dragon.age} years
-                    </Text>
-                    <Text fontSize="md" color="gray.600">
-                      Size: {dragon.size}
-                    </Text>
-                  </Flex>
-                </Box>
-              ))}
-            </VStack>
-          ) : (
-            <Text color="gray.500">No dragons acquired yet.</Text>
-          )}
+
+          {/* Grid to display dragon boxes */}
+          <Grid
+            templateColumns={{
+              base: "repeat(1, 1fr)", // 1 column for small screens
+              md: "repeat(2, 1fr)", // 2 columns for medium screens
+              lg: "repeat(3, 1fr)", // 3 columns for large screens
+              xl: "repeat(4, 1fr)", // 4 columns for extra-large screens
+            }}
+            gap={6} // Space between grid items
+            w="full"
+          >
+            {dragons.length > 0 ? (
+              dragons.map((dragon) => (
+                <GridItem key={dragon._id}>
+                  <Link to={`/dragons/${dragon._id}`}>
+                    <Box
+                      p={4}
+                      borderWidth={1}
+                      borderRadius="md"
+                      boxShadow="md"
+                      w="full"
+                      _hover={{ cursor: "pointer", bg: "gray.100" }} // Optional hover effect
+                      h="auto" // Ensure the box height adjusts automatically
+                    >
+                      <Flex direction="column" align="start">
+                        <Text fontSize="lg" fontWeight="bold" color="gray.700">
+                          {dragon.name}
+                        </Text>
+                        <Text fontSize="md" color="gray.600">
+                          Age: {dragon.age} years
+                        </Text>
+                        <Text fontSize="md" color="gray.600">
+                          Size: {dragon.size}
+                        </Text>
+                      </Flex>
+                    </Box>
+                  </Link>
+                </GridItem>
+              ))
+            ) : (
+              <Text color="gray.500">No dragons acquired yet.</Text>
+            )}
+          </Grid>
 
           <Text fontSize="lg" fontWeight="bold" color="gray.600">
             Member Since:
