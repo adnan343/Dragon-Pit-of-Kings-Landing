@@ -13,18 +13,20 @@ import {
   Divider,
   Flex,
   Center,
+  Image,
 } from "@chakra-ui/react";
 
 const ProfilePage = () => {
   const { userId } = useParams(); // Get userId from the URL
   const [user, setUser] = useState(null);
+  const [dragons, setDragons] = useState([]);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
   const navigate = useNavigate();
 
+  // Fetch the user and their dragon data
   useEffect(() => {
-    // Fetch the user data based on userId
-    const fetchUser = async () => {
+    const fetchUserData = async () => {
       try {
         const response = await fetch(
           `http://localhost:3000/api/users/${userId}`
@@ -33,6 +35,26 @@ const ProfilePage = () => {
 
         if (result.success) {
           setUser(result.data);
+
+          // Fetch dragon data if the user has acquired dragons
+          if (
+            result.data.acquiredDragons &&
+            result.data.acquiredDragons.length > 0
+          ) {
+            const dragonDataPromises = result.data.acquiredDragons.map(
+              (dragonId) =>
+                fetch(
+                  `http://localhost:3000/api/dragons/${dragonId}`
+                ).then((res) => res.json())
+            );
+            const dragonResults = await Promise.all(dragonDataPromises);
+
+            // Filter only successful dragon responses
+            const validDragons = dragonResults
+              .filter((res) => res.success)
+              .map((res) => res.data);
+            setDragons(validDragons);
+          }
         } else {
           toast({
             title: "Error",
@@ -55,7 +77,7 @@ const ProfilePage = () => {
       }
     };
 
-    fetchUser();
+    fetchUserData();
   }, [userId, toast]);
 
   if (loading) {
@@ -98,17 +120,35 @@ const ProfilePage = () => {
           <Text fontSize="lg" fontWeight="bold" color="gray.600">
             Acquired Dragons:
           </Text>
-          {user.acquiredDragons && user.acquiredDragons.length > 0 ? (
-            <VStack align="start" spacing={1}>
-              {user.acquiredDragons.map((dragonId, index) => (
-                <Text key={index} color="gray.700">
-                  Dragon {index + 1}: {dragonId}
-                </Text>
+          {dragons.length > 0 ? (
+            <VStack align="start" spacing={4}>
+              {dragons.map((dragon, index) => (
+                <Box
+                  key={dragon._id}
+                  p={4}
+                  borderWidth={1}
+                  borderRadius="md"
+                  boxShadow="md"
+                  w="full"
+                >
+                  <Flex direction="column" align="start">
+                    <Text fontSize="lg" fontWeight="bold" color="gray.700">
+                      {dragon.name}
+                    </Text>
+                    <Text fontSize="md" color="gray.600">
+                      Age: {dragon.age} years
+                    </Text>
+                    <Text fontSize="md" color="gray.600">
+                      Size: {dragon.size}
+                    </Text>
+                  </Flex>
+                </Box>
               ))}
             </VStack>
           ) : (
             <Text color="gray.500">No dragons acquired yet.</Text>
           )}
+
           <Text fontSize="lg" fontWeight="bold" color="gray.600">
             Member Since:
           </Text>
