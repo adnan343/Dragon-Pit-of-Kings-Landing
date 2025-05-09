@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   Box,
   Text,
-  Avatar,
-  Stack,
   Button,
   useToast,
   Spinner,
@@ -13,7 +11,9 @@ import {
   Divider,
   Flex,
   Center,
-  Image,
+  Grid,
+  GridItem,
+  Stack,
 } from "@chakra-ui/react";
 
 const ProfilePage = () => {
@@ -116,52 +116,82 @@ const ProfilePage = () => {
           </Badge>
         </Text>
 
-        <VStack align="start" spacing={4} w="full" mb={6}>
-          <Text fontSize="lg" fontWeight="bold" color="gray.600">
-            Acquired Dragons:
-          </Text>
-          {dragons.length > 0 ? (
-            <VStack align="start" spacing={4}>
-              {dragons.map((dragon, index) => (
-                <Box
-                  key={dragon._id}
-                  p={4}
-                  borderWidth={1}
-                  borderRadius="md"
-                  boxShadow="md"
-                  w="full"
-                >
-                  <Flex direction="column" align="start">
-                    <Text fontSize="lg" fontWeight="bold" color="gray.700">
-                      {dragon.name}
-                    </Text>
-                    <Text fontSize="md" color="gray.600">
-                      Age: {dragon.age} years
-                    </Text>
-                    <Text fontSize="md" color="gray.600">
-                      Size: {dragon.size}
-                    </Text>
-                  </Flex>
-                </Box>
-              ))}
-            </VStack>
-          ) : (
-            <Text color="gray.500">No dragons acquired yet.</Text>
-          )}
+        {/* Only show the "Acquired Dragons" section if the user is a Dragon Rider */}
+        {user.userType === "Dragon Rider" && (
+          <VStack align="start" spacing={4} w="full" mb={6}>
+            <Text fontSize="lg" fontWeight="bold" color="gray.600">
+              Acquired Dragons:
+            </Text>
 
-          <Text fontSize="lg" fontWeight="bold" color="gray.600">
-            Member Since:
-          </Text>
-          <Text fontSize="lg" color="gray.500">
-            {new Date(user.createdAt).toLocaleDateString()}
-          </Text>
-        </VStack>
+            {/* Grid to display dragon boxes */}
+            <Grid
+              templateColumns={{
+                base: "repeat(1, 1fr)", // 1 column for small screens
+                md: "repeat(2, 1fr)", // 2 columns for medium screens
+                lg: "repeat(3, 1fr)", // 3 columns for large screens
+                xl: "repeat(4, 1fr)", // 4 columns for extra-large screens
+              }}
+              gap={6} // Space between grid items
+              w="full"
+            >
+              {dragons.length > 0 ? (
+                dragons.map((dragon) => (
+                  <GridItem key={dragon._id}>
+                    <Link to={`/dragons/${dragon._id}`}>
+                      <Box
+                        p={4}
+                        borderWidth={1}
+                        borderRadius="md"
+                        boxShadow="md"
+                        w="full"
+                        _hover={{ cursor: "pointer", bg: "gray.100" }} // Optional hover effect
+                        h="auto" // Ensure the box height adjusts automatically
+                      >
+                        <Flex direction="column" align="start">
+                          <Text
+                            fontSize="lg"
+                            fontWeight="bold"
+                            color="gray.700"
+                          >
+                            {dragon.name}
+                          </Text>
+                          <Text fontSize="md" color="gray.600">
+                            Age: {dragon.age} years
+                          </Text>
+                          <Text fontSize="md" color="gray.600">
+                            Size: {dragon.size}
+                          </Text>
+                        </Flex>
+                      </Box>
+                    </Link>
+                  </GridItem>
+                ))
+              ) : (
+                <Text color="gray.500">No dragons acquired yet.</Text>
+              )}
+            </Grid>
+          </VStack>
+        )}
+
+        <Text fontSize="lg" fontWeight="bold" color="gray.600">
+          Member Since:
+        </Text>
+        <Text fontSize="lg" color="gray.500">
+          {new Date(user.createdAt).toLocaleDateString()}
+        </Text>
 
         <Divider my={4} />
-
-        <Button colorScheme="red" onClick={() => navigate("/riders")}>
-          Back to Riders
-        </Button>
+        <Stack direction="row" spacing={4}>
+          <Button colorScheme="red" onClick={() => navigate("/")}>
+            Back to HomePage
+          </Button>
+          <Button colorScheme="red" onClick={() => navigate("/riders")}>
+            Recent Fights
+          </Button>
+          <Button colorScheme="red" onClick={() => navigate("/riders")}>
+            Check All the Riders
+          </Button>
+        </Stack>
       </Flex>
     </Box>
   );

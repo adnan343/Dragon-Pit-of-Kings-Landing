@@ -107,12 +107,10 @@ export const loginUser = async (req, res) => {
 
   // Validate required fields
   if (!username || !password) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        msg: "Please provide both username and password",
-      });
+    return res.status(400).json({
+      success: false,
+      msg: "Please provide both username and password",
+    });
   }
 
   try {
@@ -133,6 +131,7 @@ export const loginUser = async (req, res) => {
       success: true,
       msg: "User logged in successfully",
       data: {
+        userId: user._id,
         username: user.username,
         name: user.name,
         userType: user.userType,
@@ -204,5 +203,36 @@ export const getUsers = async (req, res) => {
   } catch (error) {
     console.error("Error in fetching users: ", error.message);
     res.status(500).json({ success: false, msg: "SERVER ERROR" });
+  }
+};
+
+export const getUserIdByUsername = async (req, res) => {
+  const { username } = req.params; // Get username from request parameters
+
+  if (!username) {
+    return res
+      .status(400)
+      .json({ success: false, msg: "Please provide a username." });
+  }
+
+  try {
+    // Find the user by username
+    const user = await User.findOne({ username });
+
+    // If user is not found, return an error
+    if (!user) {
+      return res.status(404).json({ success: false, msg: "User not found." });
+    }
+
+    // Return the user ID
+    res.status(200).json({
+      success: true,
+      data: {
+        userId: user._id,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching user by username: ", error.message);
+    res.status(500).json({ success: false, msg: "Internal Server Error" });
   }
 };

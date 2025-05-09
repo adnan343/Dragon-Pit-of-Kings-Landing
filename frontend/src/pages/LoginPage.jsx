@@ -1,4 +1,3 @@
-// src/pages/LoginPage.js
 import { useState } from "react";
 import {
   Box,
@@ -13,6 +12,7 @@ import {
   useToast,
   InputGroup,
   InputRightElement,
+  Select,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -21,9 +21,12 @@ const LoginPage = () => {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
+    name: "",
+    userType: "", // Added for signup
   });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isSignup, setIsSignup] = useState(false); // Toggle between Login and Signup
   const toast = useToast();
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -39,7 +42,13 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.username || !formData.password) {
+    // Check for missing fields in the form
+    if (
+      !formData.username ||
+      !formData.password ||
+      (isSignup && !formData.name) ||
+      (isSignup && !formData.userType)
+    ) {
       toast({
         title: "Missing fields",
         description: "Please fill in all the fields",
@@ -53,34 +62,56 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/users/login", {
-        method: "POST",
+      let url = "/api/users/login"; // Default URL for login
+      let method = "POST";
+      let body = JSON.stringify(formData);
+
+      // If the user is signing up, change the URL and method
+      if (isSignup) {
+        url = "/api/users"; // Signup URL
+        method = "POST";
+        body = JSON.stringify(formData); // Send the signup data
+      }
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body,
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.msg || "Login failed");
+        throw new Error(data.msg || "Request failed");
       }
 
-      login(data.data); // Update the global auth state
-
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-
-      navigate("/");
+      if (isSignup) {
+        // After signup, automatically log in the user
+        login(data.data); // Assuming the response returns the user data
+        toast({
+          title: "Signup successful",
+          description: "Welcome aboard!",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+        navigate("/"); // Redirect to home or dashboard
+      } else {
+        login(data.data); // Update the global auth state for login
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+        navigate("/"); // Redirect to home or dashboard
+      }
     } catch (error) {
       toast({
-        title: "Login failed",
+        title: isSignup ? "Signup failed" : "Login failed",
         description: error.message,
         status: "error",
         duration: 5000,
@@ -96,7 +127,7 @@ const LoginPage = () => {
       <Box p={8} borderWidth={1} borderRadius="lg" boxShadow="lg">
         <Stack spacing={4}>
           <Heading as="h1" size="xl" textAlign="center" mb={4}>
-            Login
+            {isSignup ? "Sign Up" : "Login"}
           </Heading>
 
           <form onSubmit={handleSubmit}>
@@ -134,21 +165,73 @@ const LoginPage = () => {
                 </InputGroup>
               </FormControl>
 
+              {/* Only show this if user is signing up */}
+              {isSignup && (
+                <>
+                  <FormControl id="name" isRequired>
+                    <FormLabel>Full Name</FormLabel>
+                    <Input
+                      name="name"
+                      type="text"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="Enter your full name"
+                    />
+                  </FormControl>
+
+                  <FormControl id="userType" isRequired>
+                    <FormLabel>User Type</FormLabel>
+                    <Select
+                      name="userType"
+                      value={formData.userType}
+                      onChange={handleChange}
+                      placeholder="Select user type"
+                    >
+                      <option value="Dragon Rider">Dragon Rider</option>
+                      <option value="Dragon Keeper">Dragon Keeper</option>
+                      <option value="Admin">Admin</option>
+                    </Select>
+                  </FormControl>
+                </>
+              )}
+
               <Button
                 type="submit"
                 colorScheme="red"
                 size="lg"
                 isLoading={loading}
-                loadingText="Logging in..."
+                loadingText={isSignup ? "Signing up..." : "Logging in..."}
                 mt={4}
               >
-                Login
+                {isSignup ? "Sign Up" : "Login"}
               </Button>
             </Stack>
           </form>
 
           <Text mt={4} textAlign="center">
-            Don't have an account yet? Register (Coming Soon)
+            {isSignup ? (
+              <>
+                Already have an account?{" "}
+                <Button
+                  variant="link"
+                  colorScheme="teal"
+                  onClick={() => setIsSignup(false)}
+                >
+                  Login
+                </Button>
+              </>
+            ) : (
+              <>
+                Don't have an account yet?{" "}
+                <Button
+                  variant="link"
+                  colorScheme="teal"
+                  onClick={() => setIsSignup(true)}
+                >
+                  Sign Up
+                </Button>
+              </>
+            )}
           </Text>
         </Stack>
       </Box>

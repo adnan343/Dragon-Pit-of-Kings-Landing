@@ -6,14 +6,9 @@ import mongoose from "mongoose";
 // Import routes
 import dragonRoutes from "./routes/dragon.route.js";
 import dragonAcquisitionRoutes from "./routes/dragonAcquisition.routes.js";
-import userRoutes from "./routes/user.routes.js";
-
-import dragonAcquisitionRoutes from './routes/dragonAcquisition.routes.js'; // New import
-import dragonkeeperRoutes from './routes/dragonkeeper.routes.js';
-import fightRoutes from './routes/fight.routes.js';
-
-
-
+import userRoutes from "./routes/user.routes.js"; // New import
+import dragonkeeperRoutes from "./routes/dragonkeeper.routes.js";
+import fightRoutes from "./routes/fight.routes.js";
 
 // Import other routes as needed...
 
@@ -47,9 +42,9 @@ const connectDB = async () => {
 app.use("/api/dragons", dragonRoutes);
 app.use("/api/acquire", dragonAcquisitionRoutes);
 // Add other routes as needed...
-app.use('/api', dragonkeeperRoutes);
+app.use("/api", dragonkeeperRoutes);
 
-app.use('/api/fights', fightRoutes);
+app.use("/api/fights", fightRoutes);
 
 // Base route for testing API
 app.get("/", (req, res) => {
@@ -69,7 +64,6 @@ app.use((err, req, res, next) => {
 // Start server
 const PORT = process.env.PORT || 5000;
 
-
 // Connect to database then start server
 connectDB().then(async () => {
   app.listen(PORT, () => {
@@ -83,4 +77,3 @@ process.on("unhandledRejection", (err) => {
   // Close server & exit process
   process.exit(1);
 });
-
