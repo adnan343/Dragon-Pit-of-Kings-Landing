@@ -648,12 +648,6 @@ const DragonDetails = () => {
                       )}
                     </Box>
                   ))}
-
-                  {fights.length > 3 && (
-                    <Button size="sm" variant="outline" colorScheme="blue">
-                      View All Fights
-                    </Button>
-                  )}
                 </Stack>
               ) : (
                 <Text>No fight history available for this dragon.</Text>
