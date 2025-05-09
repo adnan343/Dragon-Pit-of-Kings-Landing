@@ -57,6 +57,31 @@ export const deleteDragon = async (req, res) => {
   }
 };
 
+export const getDragonById = async (req, res) => {
+  const { id } = req.params;
+
+  // Check if the provided ID is valid
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid ID format" });
+  }
+
+  try {
+    // Find the dragon by ID
+    const dragon = await Dragon.findById(id);
+
+    // If no dragon was found, return 404
+    if (!dragon) {
+      return res.status(404).json({ message: "Dragon not found" });
+    }
+
+    // Return the dragon's details
+    res.status(200).json({ success: true, data: dragon });
+  } catch (error) {
+    console.error("Error in fetching dragon by ID: ", error.message);
+    res.status(500).json({ success: false, msg: "SERVER ERROR" });
+  }
+};
+
 export const updateDragon = async (req, res) => {
   const { id } = req.params;
   const dragon = req.body;

@@ -4,6 +4,7 @@ import AddDragonPage from "./pages/AddDragonPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import Riders from "./pages/Riders";
+import ProfilePage from "./pages/ProfilePage";
 import Navbar from "./components/Navbar";
 import { AuthProvider } from "./context/AuthContext"; // Import AuthProvider
 
@@ -18,6 +19,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/add-dragon" element={<AddDragonPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/profile/:userId" element={<ProfilePage />} />
           <Route path="/riders" element={<Riders />} />
         </Routes>
       </Box>

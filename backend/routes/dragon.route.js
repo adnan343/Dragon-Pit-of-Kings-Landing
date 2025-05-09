@@ -5,6 +5,7 @@ import {
   deleteDragon,
   getDragons,
   updateDragon,
+  getDragonById,
 } from "../controllers/dragon.controller.js";
 
 const router = express.Router();
@@ -22,5 +23,6 @@ router.get("/test", (req, res) => {
 });
 
 router.get("/all", getDragons);
+router.get("/:id", getDragonById);
 
 export default router;
