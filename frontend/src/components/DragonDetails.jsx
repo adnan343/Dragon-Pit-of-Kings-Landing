@@ -42,45 +42,63 @@ const DragonDetails = () => {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [isAcquireAlertOpen, setIsAcquireAlertOpen] = useState(false);
   const cancelRef = useRef();
+  const [hasRider, setHasRider] = useState(false);
+  const [isCurrentUserRider, setIsCurrentUserRider] = useState(false);
 
   // Get user information from AuthContext using the useAuth hook
   const { user } = useAuth();
   const isAdmin = user && user.userType === "admin";
   const isRider = user && user.userType === "Dragon Rider";
-  const hasRider = dragon?.rider;
-  const isCurrentUserRider = dragon?.rider === user?.username;
-
-  const checkIfDragonHasRider = async (dragonId) => {
-    try {
-      const response = await fetch(
-        `http://localhost:3000/api/dragons/${dragonId}`
-      );
-      const data = await response.json();
-
-      // Return true if the dragon has a rider, otherwise false
-      return data.success && data.data.rider !== null;
-    } catch (error) {
-      console.error("Error fetching dragon data:", error);
-      return false; // In case of error, assume no rider
-    }
-  };
 
   useEffect(() => {
     const fetchDragonDetails = async () => {
       try {
-        const response = await axios.get(`/api/dragons/${id}`);
-        setDragon(response.data.data);
-        setLoading(false);
+        // Fetch dragon data
+        const dragonResponse = await axios.get(
+          `http://localhost:3000/api/dragons/${id}`
+        );
+        const dragonData = dragonResponse.data.data;
+        setDragon(dragonData);
+
+        // Check if dragon has a rider
+        const dragonHasRider =
+          dragonData.rider !== null && dragonData.rider !== undefined;
+        setHasRider(dragonHasRider);
 
         // Fetch rider details if there's a rider assigned
-        if (response.data.data.rider) {
-          const riderResponse = await axios.get(
-            `/api/users/${response.data.data.rider}`
-          );
-          setRiderDetails(riderResponse.data.data);
+        if (dragonHasRider) {
+          try {
+            const riderResponse = await axios.get(
+              `http://localhost:3000/api/users/${dragonData.rider}`
+            );
+            setRiderDetails(riderResponse.data.data);
+          } catch (error) {
+            console.error("Error fetching rider details:", error);
+          }
         }
-        console.log(hasRider);
-        console.log(isCurrentUserRider);
+
+        // Check if current user is the rider
+        if (user && dragonHasRider) {
+          try {
+            // Fetch current user data to get their acquired dragons
+            const userResponse = await axios.get(
+              `http://localhost:3000/api/users/${user.userId}`
+            );
+            const userData = userResponse.data.data;
+
+            // Check if this dragon is in the user's acquired dragons list
+            const isUserRider =
+              userData.acquiredDragons &&
+              userData.acquiredDragons.includes(dragonData._id);
+
+            setIsCurrentUserRider(isUserRider);
+          } catch (error) {
+            console.error("Error fetching user data:", error);
+            setIsCurrentUserRider(false);
+          }
+        }
+
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching dragon details:", error);
         setLoading(false);
@@ -88,7 +106,7 @@ const DragonDetails = () => {
     };
 
     fetchDragonDetails();
-  }, [id]);
+  }, [id, user]);
 
   const handleDeleteClick = () => {
     setIsAlertOpen(true);
@@ -137,8 +155,12 @@ const DragonDetails = () => {
 
       setDragon((prev) => ({
         ...prev,
-        rider: user.username, // Update the rider in the local state
+        rider: user.userId, // Update the rider in the local state
       }));
+
+      // Update the state variables
+      setHasRider(true);
+      setIsCurrentUserRider(true);
 
       toast({
         title: "Dragon acquired",
@@ -175,6 +197,11 @@ const DragonDetails = () => {
         ...prev,
         rider: null, // Remove the rider in the local state
       }));
+
+      // Update the state variables
+      setHasRider(false);
+      setIsCurrentUserRider(false);
+      setRiderDetails(null);
 
       toast({
         title: "Dragon released",
