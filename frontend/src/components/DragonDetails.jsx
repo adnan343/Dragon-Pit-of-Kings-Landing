@@ -50,6 +50,21 @@ const DragonDetails = () => {
   const hasRider = dragon?.rider;
   const isCurrentUserRider = dragon?.rider === user?.username;
 
+  const checkIfDragonHasRider = async (dragonId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/dragons/${dragonId}`
+      );
+      const data = await response.json();
+
+      // Return true if the dragon has a rider, otherwise false
+      return data.success && data.data.rider !== null;
+    } catch (error) {
+      console.error("Error fetching dragon data:", error);
+      return false; // In case of error, assume no rider
+    }
+  };
+
   useEffect(() => {
     const fetchDragonDetails = async () => {
       try {
@@ -64,6 +79,8 @@ const DragonDetails = () => {
           );
           setRiderDetails(riderResponse.data.data);
         }
+        console.log(hasRider);
+        console.log(isCurrentUserRider);
       } catch (error) {
         console.error("Error fetching dragon details:", error);
         setLoading(false);
@@ -112,15 +129,15 @@ const DragonDetails = () => {
   const handleAcquireConfirm = async () => {
     setIsAcquiring(true);
     try {
-      // const response = await axios.put(`/api/dragons/${id}`, {
-      //   rider: user.username,
-      // });
-      console.log(user);
-      console.log(id);
+      // POST request to /api/acquire to acquire the dragon
+      const response = await axios.post("/api/acquire", {
+        userId: user.userId, // Use user.userId for the user ID
+        dragonId: id, // Use dragon.id for the dragon ID
+      });
 
       setDragon((prev) => ({
         ...prev,
-        rider: user.username,
+        rider: user.username, // Update the rider in the local state
       }));
 
       toast({
@@ -148,13 +165,15 @@ const DragonDetails = () => {
   const handleReleaseConfirm = async () => {
     setIsAcquiring(true);
     try {
-      const response = await axios.put(`/api/dragons/${id}`, {
-        rider: null,
+      // POST request to /api/acquire/remove to release the dragon
+      const response = await axios.post("/api/acquire/remove", {
+        userId: user.userId, // Use user.userId for the user ID
+        dragonId: id, // Use dragon.id for the dragon ID
       });
 
       setDragon((prev) => ({
         ...prev,
-        rider: null,
+        rider: null, // Remove the rider in the local state
       }));
 
       toast({
