@@ -60,6 +60,15 @@ const Navbar = () => {
             Riders
           </Button>
 
+          <Button
+              as={RouterLink}
+              to="/fights"
+              colorScheme="red"
+              variant="ghost"
+          >
+            Fights
+          </Button>
+
           {isAdmin && (
             <Button
               as={RouterLink}

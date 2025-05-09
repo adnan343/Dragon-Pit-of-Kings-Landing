@@ -4,6 +4,7 @@ import AddDragonPage from "./pages/AddDragonPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import Riders from "./pages/Riders";
+import Fights from "./pages/Fights";
 import DragonDetails from './components/DragonDetails';
 import ProfilePage from "./pages/ProfilePage";
 import Navbar from "./components/Navbar";
@@ -23,6 +24,7 @@ function App() {
           <Route path="/profile/:userId" element={<ProfilePage />} />
           <Route path="/riders" element={<Riders />} />
           <Route path="/dragons/:id" element={<DragonDetails />} />
+          <Route path="/fights" element={<Fights />} />
         </Routes>
       </Box>
     </AuthProvider>
