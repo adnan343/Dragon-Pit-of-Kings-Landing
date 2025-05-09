@@ -26,6 +26,14 @@ import {
   HStack,
   Spinner,
   Center,
+  Select,
+  FormControl,
+  FormLabel,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
@@ -39,8 +47,14 @@ const DragonDetails = () => {
   const [riderDetails, setRiderDetails] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isAcquiring, setIsAcquiring] = useState(false);
+  const [isHealing, setIsHealing] = useState(false);
+  const [isFeeding, setIsFeeding] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [isAcquireAlertOpen, setIsAcquireAlertOpen] = useState(false);
+  const [isHealAlertOpen, setIsHealAlertOpen] = useState(false);
+  const [isFeedAlertOpen, setIsFeedAlertOpen] = useState(false);
+  const [healAmount, setHealAmount] = useState(10);
+  const [selectedFood, setSelectedFood] = useState("Meat");
   const cancelRef = useRef();
   const [hasRider, setHasRider] = useState(false);
   const [isCurrentUserRider, setIsCurrentUserRider] = useState(false);
@@ -49,6 +63,7 @@ const DragonDetails = () => {
   const { user } = useAuth();
   const isAdmin = user && user.userType === "admin";
   const isRider = user && user.userType === "Dragon Rider";
+  const isKeeper = user && user.userType === "Dragon Keeper";
 
   useEffect(() => {
     const fetchDragonDetails = async () => {
@@ -114,6 +129,14 @@ const DragonDetails = () => {
 
   const handleAcquireClick = () => {
     setIsAcquireAlertOpen(true);
+  };
+
+  const handleHealClick = () => {
+    setIsHealAlertOpen(true);
+  };
+
+  const handleFeedClick = () => {
+    setIsFeedAlertOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
@@ -225,6 +248,95 @@ const DragonDetails = () => {
     }
   };
 
+  const handleHealConfirm = async () => {
+    setIsHealing(true);
+    try {
+      // POST request to heal the dragon
+      const response = await axios.post(
+        `http://localhost:3000/api/dragons/${id}/heal`,
+        {
+          healAmount: healAmount,
+        }
+      );
+
+      // Update the dragon's health in local state
+      setDragon((prev) => ({
+        ...prev,
+        health: {
+          ...prev.health,
+          currentHealth: Math.min(
+            prev.health.currentHealth + healAmount,
+            prev.health.maxHealth
+          ),
+        },
+      }));
+
+      toast({
+        title: "Dragon healed",
+        description: `You have healed ${dragon.name} for ${healAmount} HP.`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error healing dragon:", error);
+      toast({
+        title: "Error",
+        description: "Failed to heal this dragon. Please try again.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsHealing(false);
+      setIsHealAlertOpen(false);
+    }
+  };
+
+  const handleFeedConfirm = async () => {
+    setIsFeeding(true);
+    try {
+      // POST request to feed the dragon
+      const response = await axios.post(
+        `http://localhost:3000/api/dragons/${id}/feed`,
+        {
+          foodType: selectedFood,
+          feederId: user.userId,
+        }
+      );
+
+      // Update the dragon's feeding status in local state
+      setDragon((prev) => ({
+        ...prev,
+        feeding: {
+          ...prev.feeding,
+          hungerLevel: "Satiated",
+          lastFed: new Date().toISOString(),
+        },
+      }));
+
+      toast({
+        title: "Dragon fed",
+        description: `You have fed ${dragon.name} with ${selectedFood}.`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error feeding dragon:", error);
+      toast({
+        title: "Error",
+        description: "Failed to feed this dragon. Please try again.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsFeeding(false);
+      setIsFeedAlertOpen(false);
+    }
+  };
+
   if (loading) {
     return (
       <Center h="100vh">
@@ -244,6 +356,14 @@ const DragonDetails = () => {
       : ((dragon.fighting.wins / totalFights) * 100).toFixed(1);
   };
 
+  // Calculate health percentage
+  const healthPercentage =
+    (dragon.health.currentHealth / dragon.health.maxHealth) * 100;
+  const needsHealing = healthPercentage < 80;
+
+  // Check if dragon needs feeding
+  const needsFeeding = dragon.feeding.hungerLevel !== "Satiated";
+
   return (
     <Container maxW="container.xl" py={8}>
       <Stack spacing={6}>
@@ -261,6 +381,30 @@ const DragonDetails = () => {
 
           {/* Action Buttons */}
           <HStack mt={4} justifyContent="flex-end">
+            {/* Dragon Keeper Buttons */}
+            {isKeeper && needsHealing && (
+              <Button
+                colorScheme="blue"
+                onClick={handleHealClick}
+                isLoading={isHealing}
+                loadingText="Healing..."
+              >
+                Heal Dragon
+              </Button>
+            )}
+
+            {isKeeper && needsFeeding && (
+              <Button
+                colorScheme="teal"
+                onClick={handleFeedClick}
+                isLoading={isFeeding}
+                loadingText="Feeding..."
+              >
+                Feed Dragon
+              </Button>
+            )}
+
+            {/* Dragon Rider Buttons */}
             {isRider && !hasRider && (
               <Button
                 colorScheme="green"
@@ -283,6 +427,7 @@ const DragonDetails = () => {
               </Button>
             )}
 
+            {/* Admin Buttons */}
             {isAdmin && (
               <Button
                 colorScheme="red"
@@ -303,10 +448,8 @@ const DragonDetails = () => {
                 Health Status
               </Heading>
               <Progress
-                value={
-                  (dragon.health.currentHealth / dragon.health.maxHealth) * 100
-                }
-                colorScheme={dragon.health.currentHealth > 50 ? "green" : "red"}
+                value={healthPercentage}
+                colorScheme={healthPercentage > 50 ? "green" : "red"}
                 mb={2}
               />
               <Text>
@@ -473,6 +616,106 @@ const DragonDetails = () => {
                 isLoading={isAcquiring}
               >
                 {isCurrentUserRider ? "Release" : "Acquire"}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+
+      {/* Heal Confirmation Dialog */}
+      <AlertDialog
+        isOpen={isHealAlertOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={() => setIsHealAlertOpen(false)}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Heal Dragon
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              <Text mb={4}>How much would you like to heal {dragon.name}?</Text>
+              <FormControl>
+                <FormLabel>Heal Amount</FormLabel>
+                <NumberInput
+                  min={1}
+                  max={dragon.health.maxHealth - dragon.health.currentHealth}
+                  value={healAmount}
+                  onChange={(valueString) =>
+                    setHealAmount(parseInt(valueString))
+                  }
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </FormControl>
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={() => setIsHealAlertOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                colorScheme="blue"
+                onClick={handleHealConfirm}
+                ml={3}
+                isLoading={isHealing}
+              >
+                Heal
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+
+      {/* Feed Confirmation Dialog */}
+      <AlertDialog
+        isOpen={isFeedAlertOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={() => setIsFeedAlertOpen(false)}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Feed Dragon
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              <Text mb={4}>What would you like to feed {dragon.name}?</Text>
+              <FormControl>
+                <FormLabel>Food Type</FormLabel>
+                <Select
+                  value={selectedFood}
+                  onChange={(e) => setSelectedFood(e.target.value)}
+                >
+                  <option value="Meat">Meat</option>
+                  <option value="Fish">Fish</option>
+                  <option value="Vegetables">Vegetables</option>
+                  <option value="Fruits">Fruits</option>
+                  {dragon.feeding.preferredFood && (
+                    <option value={dragon.feeding.preferredFood}>
+                      {dragon.feeding.preferredFood} (Preferred)
+                    </option>
+                  )}
+                </Select>
+              </FormControl>
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={() => setIsFeedAlertOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                colorScheme="teal"
+                onClick={handleFeedConfirm}
+                ml={3}
+                isLoading={isFeeding}
+              >
+                Feed
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
