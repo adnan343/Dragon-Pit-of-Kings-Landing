@@ -189,7 +189,6 @@ const LoginPage = () => {
                     >
                       <option value="Dragon Rider">Dragon Rider</option>
                       <option value="Dragon Keeper">Dragon Keeper</option>
-                      <option value="Admin">Admin</option>
                     </Select>
                   </FormControl>
                 </>

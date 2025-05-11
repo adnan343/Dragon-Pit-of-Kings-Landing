@@ -185,7 +185,7 @@ const ProfilePage = () => {
           <Button colorScheme="red" onClick={() => navigate("/")}>
             Back to HomePage
           </Button>
-          <Button colorScheme="red" onClick={() => navigate("/riders")}>
+          <Button colorScheme="red" onClick={() => navigate("/fights")}>
             Recent Fights
           </Button>
           <Button colorScheme="red" onClick={() => navigate("/riders")}>

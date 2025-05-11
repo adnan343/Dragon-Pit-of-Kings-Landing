@@ -321,3 +321,64 @@ export const updatePreferredFood = async (req, res) => {
     });
   }
 };
+
+export const damageDragon = async (req, res) => {
+  try {
+    const { dragonId } = req.params;
+    const { damageAmount } = req.body;
+
+    if (!dragonId) {
+      return res.status(400).json({ message: "Dragon ID is required" });
+    }
+
+    // Find the dragon by ID
+    const dragon = await Dragon.findById(dragonId);
+
+    if (!dragon) {
+      return res.status(404).json({ message: "Dragon not found" });
+    }
+
+    // Default damage amount if not provided
+    const amountToDamage = damageAmount || 10;
+
+    // Calculate new health, ensuring it doesn't drop below 0
+    const newHealth = Math.max(dragon.health.currentHealth - amountToDamage, 0);
+
+    // Update health
+    dragon.health.currentHealth = newHealth;
+
+    // Update health status based on the percentage of current health to max health
+    const healthPercentage = (newHealth / dragon.health.maxHealth) * 100;
+
+    if (healthPercentage >= 90) {
+      dragon.health.healthStatus = "Excellent";
+    } else if (healthPercentage >= 70) {
+      dragon.health.healthStatus = "Good";
+    } else if (healthPercentage >= 50) {
+      dragon.health.healthStatus = "Fair";
+    } else if (healthPercentage >= 25) {
+      dragon.health.healthStatus = "Poor";
+    } else {
+      dragon.health.healthStatus = "Critical";
+    }
+
+    // Update the last health update timestamp
+    dragon.health.lastHealthUpdate = Date.now();
+
+    // Save the updated dragon
+    await dragon.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Dragon damaged successfully",
+      data: dragon,
+    });
+  } catch (error) {
+    console.error("Error damaging dragon:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to damage dragon",
+      error: error.message,
+    });
+  }
+};

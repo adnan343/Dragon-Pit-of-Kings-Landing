@@ -89,6 +89,7 @@ const Riders = () => {
               borderWidth={1}
               borderRadius="md"
               boxShadow="lg"
+              borderColor="gray.200"
               bg="white"
               _hover={{ transform: "scale(1.05)", boxShadow: "xl" }}
               transition="all 0.3s ease-in-out"
