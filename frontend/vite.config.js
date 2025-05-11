@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3000', // Your backend is running on port 3000
+        target: 'https://dragon-pit-of-kings-landing-backend.onrender.com', // Your backend is running on port 3000
         changeOrigin: true,
       },
     },
